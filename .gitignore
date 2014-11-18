@@ -124,7 +124,7 @@ config.log
 /addons/audioencoder.*
 /addons/pvr.*
 /addons/xbmc.addon/addon.xml
-/addons/xbmc.json/addon.xml
+#/addons/xbmc.json/addon.xml
 
 # /lib/
 /lib/Makefile
@@ -578,9 +578,9 @@ lib/cpluff/stamp-h1
 
 # /xbmc/interfaces/
 /xbmc/interfaces/Makefile
-/xbmc/interfaces/json-rpc/ServiceDescription.h
+#/xbmc/interfaces/json-rpc/ServiceDescription.h
 /xbmc/interfaces/python/Makefile
-/xbmc/interfaces/python/generated/
+/xbmc/interfaces/python/generated/doxygenxml
 /xbmc/interfaces/python/test/Makefile
 
 # /xbmc/linux/
