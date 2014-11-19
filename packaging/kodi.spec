@@ -7,12 +7,9 @@ License: GPLv2+ and GPLv3+
 Group: Applications/Multimedia
 URL: http://www.xbmc.org/
 Source0: %{name}-%{version}.tar.xz
-# kodi contains code that we cannot ship, as well as redundant private
-# copies of upstream libraries that we already distribute.  Therefore
-# we use this script to remove the code before shipping it.
-# Invoke this script while in the directory where the tarball is located:
-# ./kodi-generate-tarball-xz.sh
-#Source1: kodi-generate-tarball-xz.sh
+
+# Gbp-Ignore-Patches: 0
+Patch1: 0001-remove_java_deps_from_bootstrap.patch
 
 # Kodi is the renamed XBMC project
 Obsoletes: xbmc < 14.0-1
@@ -77,11 +74,23 @@ BuildRequires: sqlite-devel
 BuildRequires: swig
 BuildRequires: systemd-devel
 BuildRequires: taglib-devel >= 1.8
-#BuildRequires: tinyxml-devel
+BuildRequires: tinyxml-devel
 #BuildRequires: tre-devel
 #BuildRequires: trousers-devel
 BuildRequires: yajl-devel
 BuildRequires: zlib-devel
+BuildRequires: doxygen
+BuildRequires: libxkbcommon-devel
+BuildRequires: pixman-devel
+BuildRequires: cairo-devel
+BuildRequires: weston-devel
+BuildRequires: libopenssl-devel
+BuildRequires: makeinfo
+BuildRequires: curl
+BuildRequires: unzip
+BuildRequires: zip
+BuildRequires: gnutls
+BuildRequires: libgnutls-devel
 
 #BuildRequires: nfs-utils-devel
 
@@ -129,6 +138,9 @@ library.
 
 %prep
 %setup -q -n %{name}-%{version}
+
+# Gbp-Patch-Macros
+%patch1 -p1
 
   # Remove hdhomerun from the build.
   pushd xbmc/filesystem/
