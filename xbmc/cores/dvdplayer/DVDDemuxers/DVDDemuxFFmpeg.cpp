@@ -538,8 +538,8 @@ void CDVDDemuxFFmpeg::Reset()
 void CDVDDemuxFFmpeg::Flush()
 {
   // naughty usage of an internal ffmpeg function
-  if (m_pFormatContext)
-    av_read_frame_flush(m_pFormatContext);
+//  if (m_pFormatContext)
+//    av_read_frame_flush(m_pFormatContext);
 
   m_currentPts = DVD_NOPTS_VALUE;
 
