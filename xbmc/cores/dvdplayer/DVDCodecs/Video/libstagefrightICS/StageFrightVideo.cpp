@@ -40,6 +40,9 @@
 
 #include "xbmc/guilib/FrameBufferObject.h"
 
+#if defined(HAVE_WAYLAND)
+#include <wayland-egl.h>
+#endif
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include "windowing/egl/EGLWrapper.h"
