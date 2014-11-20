@@ -3,7 +3,7 @@ Version: 14.0b3
 Release: 0.2.beta3
 Summary: Media center
 
-License: GPLv2+ and GPLv3+
+License: GPL-2.0+ and GPL-3.0+
 Group: Applications/Multimedia
 URL: http://www.xbmc.org/
 Source0: %{name}-%{version}.tar.xz
@@ -53,7 +53,6 @@ BuildRequires: libtiff-devel
 BuildRequires: libtool
 %ifnarch %{arm} mipsel
 BuildRequires: libva-devel
-BuildRequires: libvdpau-devel
 %endif
 BuildRequires: libvorbis-devel
 BuildRequires: libxml2-devel
@@ -91,6 +90,10 @@ BuildRequires: unzip
 BuildRequires: zip
 BuildRequires: gnutls
 BuildRequires: libgnutls-devel
+BuildRequires: libnettle-devel
+BuildRequires: gmp-devel
+BuildRequires: libhogweed
+
 
 #BuildRequires: nfs-utils-devel
 
@@ -117,24 +120,6 @@ Requires: %{name} = %{version}-%{release}
 Kodi is a free cross-platform media-player jukebox and entertainment hub.
 If you want to develop programs which use Kodi's libraries, you need to 
 install this package.
-
-
-#%package eventclients
-#Summary: Media center event client remotes
-#
-#%description eventclients
-#This package contains support for using Kodi with the PS3 Remote, the Wii
-#Remote, a J2ME based remote and the command line xbmc-send utility.
-#
-#%package eventclients-devel
-#Summary: Media center event client remotes development files
-#Requires:	%{name}-eventclients = %{version}-%{release}
-#Requires:	%{name}-devel = %{version}-%{release}
-#
-#%description eventclients-devel
-#This package contains the development header files for the eventclients
-#library.
-
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -173,16 +158,13 @@ chmod +x bootstrap
 --disable-texturepacker \
 --disable-dvdcss \
 --disable-optimizations --disable-debug \
-%ifnarch %{arm} mipsel
---enable-gl \
---disable-gles \
---enable-vdpau \
-%else
+--disable-x11 \
+--enable-wayland \
 --enable-gles \
 --disable-vdpau \
 --disable-vaapi \
 --disable-neon \
-%endif
+
 CFLAGS="$RPM_OPT_FLAGS -fPIC -I/usr/include/samba-4.0/ -D__STDC_CONSTANT_MACROS" \
 CXXFLAGS="$RPM_OPT_FLAGS -fPIC -I/usr/include/samba-4.0/ -D__STDC_CONSTANT_MACROS" \
 LDFLAGS="-fPIC" \
@@ -250,19 +232,4 @@ fi
 %files devel
 %{_includedir}/xbmc
 %{_includedir}/kodi
-
-
-#%files eventclients
-#%python_sitelib/xbmc
-#%dir %{_datadir}/pixmaps/xbmc
-#%{_datadir}/pixmaps/xbmc/*.png
-#%{_bindir}/xbmc-j2meremote
-#%{_bindir}/xbmc-ps3d
-#%{_bindir}/xbmc-ps3remote
-#%{_bindir}/xbmc-send
-#%{_bindir}/xbmc-wiiremote
-#
-#
-#%files eventclients-devel
-#%{_includedir}/xbmc/xbmcclient.h
 
