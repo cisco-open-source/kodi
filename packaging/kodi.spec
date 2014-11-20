@@ -119,21 +119,21 @@ If you want to develop programs which use Kodi's libraries, you need to
 install this package.
 
 
-%package eventclients
-Summary: Media center event client remotes
-
-%description eventclients
-This package contains support for using Kodi with the PS3 Remote, the Wii
-Remote, a J2ME based remote and the command line xbmc-send utility.
-
-%package eventclients-devel
-Summary: Media center event client remotes development files
-Requires:	%{name}-eventclients = %{version}-%{release}
-Requires:	%{name}-devel = %{version}-%{release}
-
-%description eventclients-devel
-This package contains the development header files for the eventclients
-library.
+#%package eventclients
+#Summary: Media center event client remotes
+#
+#%description eventclients
+#This package contains support for using Kodi with the PS3 Remote, the Wii
+#Remote, a J2ME based remote and the command line xbmc-send utility.
+#
+#%package eventclients-devel
+#Summary: Media center event client remotes development files
+#Requires:	%{name}-eventclients = %{version}-%{release}
+#Requires:	%{name}-devel = %{version}-%{release}
+#
+#%description eventclients-devel
+#This package contains the development header files for the eventclients
+#library.
 
 
 %prep
@@ -194,13 +194,13 @@ make %{?_smp_mflags} VERBOSE=1
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
-make -C tools/EventClients DESTDIR=$RPM_BUILD_ROOT install 
+#make -C tools/EventClients DESTDIR=$RPM_BUILD_ROOT install 
 # remove the doc files from unversioned /usr/share/doc/xbmc, they should be in versioned docdir
 rm -r $RPM_BUILD_ROOT/%{_datadir}/doc/
 
 desktop-file-install \
  --dir=${RPM_BUILD_ROOT}%{_datadir}/applications \
- $RPM_BUILD_ROOT%{_datadir}/applications/xbmc.desktop
+ $RPM_BUILD_ROOT%{_datadir}/applications/kodi.desktop
 
 # Normally we are expected to build these manually. But since we are using
 # the system Python interpreter, we also want to use the system libraries
@@ -231,32 +231,38 @@ fi
 
 %files
 %defattr(-,root,root)
-%doc copying.txt CONTRIBUTORS LICENSE.GPL README
-%doc docs
+%doc copying.txt CONTRIBUTORS LICENSE.GPL
+#%doc docs
 %{_bindir}/xbmc
 %{_bindir}/xbmc-standalone
+%{_bindir}/kodi
+%{_bindir}/kodi-standalone
 %{_libdir}/xbmc
+%{_libdir}/kodi
 %{_datadir}/xbmc
-%{_datadir}/xsessions/XBMC.desktop
-%{_datadir}/applications/xbmc.desktop
+%{_datadir}/kodi
+%{_datadir}/xsessions/xbmc.desktop
+%{_datadir}/xsessions/kodi.desktop
+%{_datadir}/applications/kodi.desktop
 %{_datadir}/icons/hicolor/*/*/*.png
 
 
 %files devel
 %{_includedir}/xbmc
+%{_includedir}/kodi
 
 
-%files eventclients
-%python_sitelib/xbmc
-%dir %{_datadir}/pixmaps/xbmc
-%{_datadir}/pixmaps/xbmc/*.png
-%{_bindir}/xbmc-j2meremote
-%{_bindir}/xbmc-ps3d
-%{_bindir}/xbmc-ps3remote
-%{_bindir}/xbmc-send
-%{_bindir}/xbmc-wiiremote
-
-
-%files eventclients-devel
-%{_includedir}/xbmc/xbmcclient.h
+#%files eventclients
+#%python_sitelib/xbmc
+#%dir %{_datadir}/pixmaps/xbmc
+#%{_datadir}/pixmaps/xbmc/*.png
+#%{_bindir}/xbmc-j2meremote
+#%{_bindir}/xbmc-ps3d
+#%{_bindir}/xbmc-ps3remote
+#%{_bindir}/xbmc-send
+#%{_bindir}/xbmc-wiiremote
+#
+#
+#%files eventclients-devel
+#%{_includedir}/xbmc/xbmcclient.h
 
