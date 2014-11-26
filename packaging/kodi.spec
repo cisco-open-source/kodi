@@ -207,10 +207,6 @@ if [ $1 -eq 0 ] ; then
 fi
 
 
-%posttrans
-/usr/bin/gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
-
-
 %files
 %defattr(-,root,root)
 %doc copying.txt CONTRIBUTORS LICENSE.GPL
