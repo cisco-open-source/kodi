@@ -674,7 +674,7 @@ case $host in
      use_gles=yes
      use_gl=no
      use_sdl=no
-     use_wayland=no
+     use_wayland=yes
      USE_STATIC_FFMPEG=1
      ;;
   mips*-*-linux-gnu*|mips*-*-linux-uclibc*)
