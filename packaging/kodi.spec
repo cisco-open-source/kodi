@@ -1,3 +1,6 @@
+%define _fontsdir               %{_datadir}/fonts
+%define _ttffontsdir            %{_fontsdir}/truetype
+
 Name: kodi
 Version: 14.0b3
 Release: 0.2.beta3
@@ -192,8 +195,8 @@ ln -s %{python_sitearch}/PIL $RPM_BUILD_ROOT%{_libdir}/xbmc/addons/script.module
 #ln -s %{python_sitearch}/pysqlite2 $RPM_BUILD_ROOT%{_libdir}/xbmc/addons/script.module.pysqlite/lib/pysqlite2
 
 # Use external Roboto font files instead of bundled ones
-ln -sf %{_fontbasedir}/google-roboto/Roboto-Regular.ttf ${RPM_BUILD_ROOT}%{_datadir}/xbmc/addons/skin.confluence/fonts/
-ln -sf %{_fontbasedir}/google-roboto/Roboto-Bold.ttf ${RPM_BUILD_ROOT}%{_datadir}/xbmc/addons/skin.confluence/fonts/
+ln -sf %{_ttffontsdir}/Roboto-Regular.ttf ${RPM_BUILD_ROOT}%{_datadir}/xbmc/addons/skin.confluence/fonts/
+ln -sf %{_ttffontsdir}/Roboto-Bold.ttf ${RPM_BUILD_ROOT}%{_datadir}/xbmc/addons/skin.confluence/fonts/
 
 
 %post
