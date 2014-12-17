@@ -2,8 +2,8 @@
 %define _ttffontsdir            %{_fontsdir}/truetype
 
 Name: kodi
-Version: 14.0b3
-Release: 0.2.beta3
+Version: 15.01a
+Release: 0.1.alpha1
 Summary: Media center
 
 License: GPL-2.0+ and GPL-3.0+
