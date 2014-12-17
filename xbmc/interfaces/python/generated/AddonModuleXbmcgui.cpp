@@ -13687,7 +13687,7 @@ result = PyString_FromStringAndSize(apiResult.c_str(), apiResult.length());
 
    // constants
    PyModule_AddStringConstant(module, (char*)"__author__", (char*)"Team XBMC <http://xbmc.org>");
-   PyModule_AddStringConstant(module, (char*)"__date__", (char*)"Tue Nov 18 13:38:11 EET 2014");
+   PyModule_AddStringConstant(module, (char*)"__date__", (char*)"Wed Dec 17 14:18:51 EET 2014");
    PyModule_AddStringConstant(module, (char*)"__version__", (char*)"2.19.0");
    PyModule_AddStringConstant(module, (char*)"__credits__", (char*)"Team XBMC");
    PyModule_AddStringConstant(module, (char*)"__platform__", (char*)"ALL");

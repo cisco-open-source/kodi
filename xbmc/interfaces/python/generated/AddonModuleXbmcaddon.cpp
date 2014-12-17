@@ -359,7 +359,8 @@ result = PyString_FromStringAndSize(apiResult.c_str(), apiResult.length());
 "\n"
 "id : string - id of the property that the module needs to access.\n"
 "\n"
-"*Note, choices are (author, changelog, description, disclaimer, fanart. icon, id, name, path profile, stars, summary, type, version)\n"
+"*Note, choices are (author, changelog, description, disclaimer, fanart. icon, id, name, path,\n"
+"profile, stars, summary, type, version)\n"
 "\n"
 "example:\n"
 "    - version = self.Addon.getAddonInfo('version')\n");
@@ -543,7 +544,7 @@ result = PyString_FromStringAndSize(apiResult.c_str(), apiResult.length());
 
    // constants
    PyModule_AddStringConstant(module, (char*)"__author__", (char*)"Team XBMC <http://xbmc.org>");
-   PyModule_AddStringConstant(module, (char*)"__date__", (char*)"Tue Nov 18 13:38:21 EET 2014");
+   PyModule_AddStringConstant(module, (char*)"__date__", (char*)"Wed Dec 17 14:19:03 EET 2014");
    PyModule_AddStringConstant(module, (char*)"__version__", (char*)"2.19.0");
    PyModule_AddStringConstant(module, (char*)"__credits__", (char*)"Team XBMC");
    PyModule_AddStringConstant(module, (char*)"__platform__", (char*)"ALL");
