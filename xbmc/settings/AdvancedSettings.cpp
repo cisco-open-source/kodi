@@ -125,8 +125,11 @@ void CAdvancedSettings::Initialize()
   m_karaokeStartIndex = 1;
   m_karaokeAlwaysEmptyOnCdgs = 1;
   m_karaokeUseSongSpecificBackground = 0;
-
+#if HAVE_LIBGSTREAMER
+  m_audioDefaultPlayer = "gstplayer";
+#else
   m_audioDefaultPlayer = "paplayer";
+#endif
   m_audioPlayCountMinimumPercent = 90.0f;
 
   m_videoSubsDelayRange = 60;
