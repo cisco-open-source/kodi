@@ -146,7 +146,11 @@ void CAdvancedSettings::Initialize()
   m_videoBlackBarColour = 0;
   m_videoPPFFmpegDeint = "linblenddeint";
   m_videoPPFFmpegPostProc = "ha:128:7,va,dr";
+#if HAVE_LIBGSTREAMER
+  m_videoDefaultPlayer = "gstplayer";
+#else
   m_videoDefaultPlayer = "dvdplayer";
+#endif
   m_videoDefaultDVDPlayer = "dvdplayer";
   m_videoIgnoreSecondsAtStart = 3*60;
   m_videoIgnorePercentAtEnd   = 8.0f;
