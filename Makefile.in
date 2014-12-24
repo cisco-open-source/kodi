@@ -104,6 +104,10 @@ NWAOBJSXBMC=	xbmc/threads/threads.a \
 		xbmc/commons/commons.a
 
 
+ifeq (@USE_GSTREAMER@,1)
+DIRECTORY_ARCHIVES += xbmc/cores/gstplayer/gstplayer.a 
+endif
+
 ifeq (@USE_WEB_SERVER@,1)
 DIRECTORY_ARCHIVES += xbmc/network/httprequesthandler/httprequesthandlers.a
 endif
