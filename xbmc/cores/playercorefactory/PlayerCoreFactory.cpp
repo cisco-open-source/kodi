@@ -335,6 +335,12 @@ bool CPlayerCoreFactory::LoadConfiguration(const std::string &file, bool clear)
     m_vecCoreConfigs.push_back(dvdplayer);
 
      // Don't remove this, its a placeholder for the old MPlayer core, it would break scripts
+
+#if HAVE_LIBGSTREAMER
+    CPlayerCoreConfig* gstplayer = new CPlayerCoreConfig("GstPlayer", EPC_GSTPLAYER, NULL);
+    m_vecCoreConfigs.push_back(gstplayer);
+#endif
+
     CPlayerCoreConfig* mplayer = new CPlayerCoreConfig("oldmplayercore", EPC_DVDPLAYER, NULL);
     m_vecCoreConfigs.push_back(mplayer);
 
@@ -368,6 +374,9 @@ bool CPlayerCoreFactory::LoadConfiguration(const std::string &file, bool clear)
       if (type == "dvdplayer" || type == "mplayer") eCore = EPC_DVDPLAYER;
       if (type == "paplayer" ) eCore = EPC_PAPLAYER;
       if (type == "externalplayer" ) eCore = EPC_EXTPLAYER;
+#if HAVE_LIBGSTREAMER
+      if (type == "gstplayer") eCore = EPC_GSTPLAYER;
+#endif  
 
       if (eCore != EPC_NONE)
       {

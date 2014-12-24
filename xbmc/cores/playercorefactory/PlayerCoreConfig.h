@@ -28,6 +28,9 @@
 #ifdef HAS_UPNP
 #include "network/upnp/UPnPPlayer.h"
 #endif
+#ifdef HAVE_LIBGSTREAMER
+#include "cores/gstplayer/GstPlayer.h"
+#endif
 #include "utils/log.h"
 
 class CPlayerCoreConfig
@@ -99,6 +102,9 @@ public:
       case EPC_EXTPLAYER: pPlayer = new CExternalPlayer(callback); break;
 #if defined(HAS_UPNP)
       case EPC_UPNPPLAYER: pPlayer = new UPNP::CUPnPPlayer(callback, m_id.c_str()); break;
+#endif
+#ifdef HAVE_LIBGSTREAMER
+      case EPC_GSTPLAYER: pPlayer = new CGstPlayer(callback); break;
 #endif
       default: return NULL;
     }
