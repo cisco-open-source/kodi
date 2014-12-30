@@ -96,7 +96,7 @@ BuildRequires: libgnutls-devel
 BuildRequires: libnettle-devel
 BuildRequires: gmp-devel
 BuildRequires: libhogweed
-
+BuildRequires: libmicrohttpd-devel
 
 #BuildRequires: nfs-utils-devel
 
@@ -155,7 +155,7 @@ chmod +x bootstrap
 --disable-libcec \
 --disable-ssh \
 --disable-mysql \
---disable-webserver \
+--enable-webserver \
 --disable-ssh \
 --disable-samba \
 --disable-texturepacker \
