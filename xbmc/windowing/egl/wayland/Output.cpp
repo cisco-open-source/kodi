@@ -229,11 +229,15 @@ xw::Output::Mode(uint32_t flags,
    * or existing mode. In both cases we need to
    * update the current and preferred modes */
   if (outputFlags & WL_OUTPUT_MODE_CURRENT)
+  {
     m_current = *update;
     m_currentValid = true;
+  }
   if (outputFlags & WL_OUTPUT_MODE_PREFERRED)
+  {
     m_preferred = *update;
     m_preferredValid = true;
+  }
 }
 
 void
