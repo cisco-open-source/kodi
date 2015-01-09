@@ -182,8 +182,10 @@ private:
 
 
   CFileItem   m_item;
-  GstElement* m_pPlayBin;
+  GstElement *m_pPlayBin;
   GstBus     *m_pBus;
+
+  gulong videosink_handler;
 
   MediaInfo m_mediainfo;
   int m_audio_current;

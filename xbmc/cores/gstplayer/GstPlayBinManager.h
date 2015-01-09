@@ -6,6 +6,7 @@
 #include <boost/shared_ptr.hpp>
 #include <stdio.h>
 #include <stdint.h>
+#include <string>
 
 class CGstPlayBinManager
 {

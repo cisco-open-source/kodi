@@ -1,6 +1,7 @@
 
 
 #include "GstPlayer.h"
+#include "GstPlayBinManager.h"
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "utils/LangCodeExpander.h"
@@ -33,13 +34,14 @@
 CGstPlayer::CGstPlayer(IPlayerCallback& callback)
 : IPlayer(callback),
   CThread("GstPlayer"),
-  m_ready(true),
+  m_pPlayBin(NULL),
+  m_pBus(NULL),
+  videosink_handler(0),
   m_paused(false),
-  m_speed(1)
+  m_speed(1),
+  m_ready(true)
 {
-  //TODO: need implement
   printf("FUNCTION: %s\n", __FUNCTION__);
-  m_pPlayBin = NULL;
 }
 
 CGstPlayer::~CGstPlayer()
@@ -68,6 +70,7 @@ bool CGstPlayer::OpenFile(const CFileItem& file, const CPlayerOptions& options)
 
   m_ready.Reset();
 
+//Start thread after playbin is created
   Create();
 
   CGUIDialogBusy::WaitOnEvent(m_ready, g_advancedSettings.m_videoBusyDialogDelay_ms, false);
@@ -84,6 +87,7 @@ bool CGstPlayer::CloseFile(bool)
   //TODO: need implement
   printf("FUNCTION: %s\n", __FUNCTION__);
   CLog::Log(LOGNOTICE, "CloseFile - Stopping Thread");
+  //Stop thread playbin is destroyed playbin is created
   StopThread();
 
   if (m_pPlayBin)
@@ -108,16 +112,14 @@ void CGstPlayer::Pause()
   CLog::Log(LOGNOTICE, "---[%s]---", __FUNCTION__);
 
   m_paused = !m_paused;
-  // if (m_bus){
-  //   gst_bus_post(m_bus, gst_message_new_custom(GST_MESSAGE_APPLICATION, NULL, gst_structure_new("pause", NULL)));
-  // }
+
   if (!m_paused) {
-    gst_element_set_state(m_pPlayBin, GST_STATE_PLAYING);
-    m_callback.OnPlayBackResumed();
+    if (SetAndWaitPlaybinState(GST_STATE_PLAYING, 10))
+      m_callback.OnPlayBackResumed();
   }
   else {
-    gst_element_set_state(m_pPlayBin, GST_STATE_PAUSED);
-    m_callback.OnPlayBackPaused();
+    if (SetAndWaitPlaybinState(GST_STATE_PAUSED, 10))
+      m_callback.OnPlayBackPaused();
   }
 }
 
@@ -401,7 +403,7 @@ void CGstPlayer::Process()
     CLog::Log(LOGNOTICE, "Play uri %s", uri.c_str());
     g_object_set(G_OBJECT(m_pPlayBin), "uri", uri.c_str(), NULL);
 
-    if ((SetAndWaitPlaybinState(GST_STATE_PAUSED, 60)==false) || (m_cancelled)){
+    if (!SetAndWaitPlaybinState(GST_STATE_PAUSED, 60) || (m_cancelled)){
       m_bStop = true;
       m_ready.Set();
       goto finish;
@@ -409,7 +411,7 @@ void CGstPlayer::Process()
 
     LoadMediaInfo();
 
-    if (SetAndWaitPlaybinState(GST_STATE_PLAYING, 10)==false){
+    if (!SetAndWaitPlaybinState(GST_STATE_PLAYING, 10)){
       m_bStop = true;
       m_ready.Set();
       goto finish;
@@ -484,10 +486,11 @@ void CGstPlayer::Process()
     }
   }
 finish:  
+  printf("Player stop begin\n");
   CLog::Log(LOGNOTICE, "Player stop begin");
   gst_bus_set_flushing(m_pBus, TRUE);
 
-  if (SetAndWaitPlaybinState(GST_STATE_NULL, 30) == false) {
+  if (!SetAndWaitPlaybinState(GST_STATE_NULL, 30)) {
     CLog::Log(LOGERROR, "Stop player failed");
   }
   if (eos)
@@ -506,35 +509,21 @@ bool CGstPlayer::InitializeGst()
 bool CGstPlayer::CreatePlayBin()
 {
   GstElement *videosink = NULL;
-  m_pPlayBin = gst_element_factory_make("playbin", "play");
+  m_pPlayBin = CGstPlayBinManager::GetInstance().GetPlayBin();
 
-  if(!m_pPlayBin)
-  {
-    CLog::Log(LOGERROR, "CreatePlayBin - gst_element_factory_make playbin failed");
+  if (NULL == m_pPlayBin) {
+    CLog::Log(LOGERROR, "%s(): Failed to create playbin!", __FUNCTION__);
     return false;
   }
 
-  //prepare videosink
-  videosink = gst_element_factory_make("appsink", "videosink");
-  if(!videosink)
+  // if video-sink is appsink we set callback function
+  // TODO: add the same for audio-sink
+  g_object_get( G_OBJECT(m_pPlayBin), "video-sink", &videosink, NULL);
+  if (videosink && GST_APP_SINK(videosink))
   {
-    CLog::Log(LOGERROR, "CreatePlayBin - gst_element_factory_make appsink failed");
-    return false;
+      g_object_set(G_OBJECT(videosink), "emit-signals", TRUE, "sync", TRUE, NULL);
+      videosink_handler = g_signal_connect(videosink, "new-sample", G_CALLBACK(OnDecodedBuffer), this);
   }
-
-// TODO: compare different methods: signal and callback
-  // GstAppSinkCallbacks appsink_callbacks = {
-  //       NULL,
-  //       NULL,
-  //       OnDecodedBuffer
-
-  // };
-  // gst_app_sink_set_callbacks (GST_APP_SINK(videosink), &appsink_callbacks, m_pPlayBin, NULL);
-
-  g_object_set(G_OBJECT(videosink), "emit-signals", TRUE, "sync", TRUE, NULL);
-  g_signal_connect(videosink, "new-sample", G_CALLBACK(OnDecodedBuffer), this);
-
-  g_object_set(G_OBJECT(m_pPlayBin), "video-sink", videosink, NULL);
 
   m_pBus = gst_pipeline_get_bus(GST_PIPELINE(m_pPlayBin));
   if( NULL == m_pBus )
@@ -549,7 +538,16 @@ bool CGstPlayer::CreatePlayBin()
 bool CGstPlayer::DestroyPlayBin()
 {
   printf("FUNCTION: %s\n", __FUNCTION__);
-  gst_object_unref(m_pPlayBin);
+
+  //remove signal from apssink
+  if (videosink_handler) {
+    GstElement *videosink = NULL;
+    g_object_get( G_OBJECT(m_pPlayBin), "video-sink", &videosink, NULL);
+    if (videosink)
+      g_signal_handler_disconnect(videosink, videosink_handler);
+  }
+  // gst_object_unref(m_pPlayBin);
+  CGstPlayBinManager::GetInstance().ReleasePlayBin(m_pPlayBin);
   m_pPlayBin = NULL;
   return true;
 }
