@@ -1,4 +1,5 @@
 SRCS  = GstPlayer.cpp
+SRCS  += GstPlayBinManager.cpp
 
 LIB = gstplayer.a
 
