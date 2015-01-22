@@ -101,6 +101,7 @@ BuildRequires: libmicrohttpd-devel
 #BuildRequires: nfs-utils-devel
 
 Requires: google-roboto-fonts
+Requires: python-xml
 
 # This is just symlinked to, but needed both at build-time
 # and for installation
