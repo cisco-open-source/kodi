@@ -105,7 +105,7 @@ public:
    \brief total time in milliseconds
    */
   virtual int64_t GetTotalTime();
-  virtual void GetVideoStreamInfo(SPlayerVideoStreamInfo &info){ printf("FUNCTION: %s\n", __FUNCTION__);};
+  virtual void GetVideoStreamInfo(SPlayerVideoStreamInfo &info);
   virtual int GetSourceBitrate(){ printf("FUNCTION: %s\n", __FUNCTION__); return 0;}
   virtual bool GetStreamDetails(CStreamDetails &details);
   virtual void ToFFRW(int iSpeed = 0);
@@ -113,9 +113,9 @@ public:
   virtual bool SkipNext(){ printf("FUNCTION: %s\n", __FUNCTION__); return false;}
 
   //Returns true if not playback (paused or stopped beeing filled)
-  virtual bool IsCaching() const { return false;};
+  virtual bool IsCaching() const;
   //Cache filled in Percent
-  virtual int GetCacheLevel() const { return -1;};
+  virtual int GetCacheLevel() const;
 
   // Menu is DVD/Blueray feature;
   virtual bool IsInMenu() const { return false;};
@@ -180,6 +180,8 @@ private:
   static GstFlowReturn OnDecodedBuffer(GstAppSink *sink, void *data);
   int OutputPicture(GstSample * sample);
 
+  void AppendInfoString(std::string& infoStr, gchar* data, const std::string& prefix, const std::string& postfix);
+
 
   CFileItem   m_item;
   GstElement *m_pPlayBin;
@@ -195,8 +197,10 @@ private:
   bool m_cancelled;
   bool m_paused;
   gint m_cache_level;
+  bool m_buffering;
   //?
   int m_speed;
+  gint64 m_starttime;
   CEvent m_ready;
 
   struct SOutputConfiguration

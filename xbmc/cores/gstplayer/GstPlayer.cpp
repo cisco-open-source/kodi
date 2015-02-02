@@ -38,6 +38,7 @@ CGstPlayer::CGstPlayer(IPlayerCallback& callback)
   m_pBus(NULL),
   videosink_handler(0),
   m_paused(false),
+  m_buffering(false),
   m_speed(1),
   m_ready(true)
 {
@@ -56,6 +57,7 @@ bool CGstPlayer::OpenFile(const CFileItem& file, const CPlayerOptions& options)
   printf("FUNCTION: %s\n", __FUNCTION__);
   m_item = file;
   m_cancelled = false;
+  m_starttime = (gint64)(options.starttime*1000000000);
 
   memset(&m_mediainfo, 0, sizeof(MediaInfo));
 
@@ -113,7 +115,7 @@ void CGstPlayer::Pause()
 
   m_paused = !m_paused;
 
-  if (!m_paused) {
+  if (!m_paused && !m_buffering) {
     if (SetAndWaitPlaybinState(GST_STATE_PLAYING, 10))
       m_callback.OnPlayBackResumed();
   }
@@ -126,7 +128,7 @@ void CGstPlayer::Pause()
 
 bool CGstPlayer::IsPaused() const
 {
-  return m_paused;
+  return m_paused || m_buffering;
 }
 
 bool CGstPlayer::HasVideo() const
@@ -211,9 +213,8 @@ void CGstPlayer::SeekTime(int64_t iTime)
     gst_element_send_event(m_pPlayBin, seek_event);
   }
 
-  CLog::Log(LOGNOTICE, "---[%s finish]---%lld", __FUNCTION__, iTime);
   m_callback.OnPlayBackSeek((int)iTime, seekOffset);
-  CLog::Log(LOGNOTICE, "---[%s nretun]---%lld", __FUNCTION__, iTime);
+  CLog::Log(LOGNOTICE, "---[%s finish]---%lld", __FUNCTION__, iTime);
 }
 
 float CGstPlayer::GetPercentage()
@@ -243,22 +244,46 @@ bool CGstPlayer::ControlsVolume()
   return true;
 }
 
-void CGstPlayer::GetAudioInfo(std::string&)
+void CGstPlayer::GetAudioInfo(std::string& strAudioInfo)
 {
-  //TODO: need implement
-  printf("FUNCTION: %s\n", __FUNCTION__);
+  strAudioInfo = "Audio (";
+  if (m_mediainfo.audio_info){
+    MediaAudioInfo * ainfo = &m_mediainfo.audio_info[m_audio_current];
+    AppendInfoString(strAudioInfo, ainfo->codec, "Codec: ", ", ");
+    AppendInfoString(strAudioInfo, ainfo->lang, "Language: ", ", ");
+    if (ainfo->bitrate){
+      std::string bitstr;
+      bitstr = StringUtils::Format("Bitrate: %d", ainfo->bitrate);
+      strAudioInfo += bitstr;
+    }
+  }
+  strAudioInfo += ")";
 }
 
-void CGstPlayer::GetVideoInfo(std::string&)
+void CGstPlayer::GetVideoInfo(std::string& strVideoInfo)
 {
-  //TODO: need implement
-  printf("FUNCTION: %s\n", __FUNCTION__);
+  strVideoInfo = "Video (";
+  if (m_mediainfo.video_info){
+    MediaVideoInfo * vinfo = &m_mediainfo.video_info[m_video_current];
+    AppendInfoString(strVideoInfo, vinfo->codec, "Codec: ", ", ");
+    if (vinfo->bitrate){
+      std::string bitstr;
+      bitstr = StringUtils::Format("Bitrate: %d", vinfo->bitrate);
+      strVideoInfo += bitstr;
+    }
+  }
+  strVideoInfo += ")";
 }
 
-void CGstPlayer::GetGeneralInfo(std::string&)
+void CGstPlayer::GetGeneralInfo(std::string& strGeneralInfo)
 {
-  //TODO: need implement
-  printf("FUNCTION: %s\n", __FUNCTION__);
+  strGeneralInfo = "";
+  AppendInfoString(strGeneralInfo, m_mediainfo.title, "Title :", ", ");
+  AppendInfoString(strGeneralInfo, m_mediainfo.artist, "Artist: ", ", ");
+  AppendInfoString(strGeneralInfo, m_mediainfo.genre, "Genre: ", ", ");
+  AppendInfoString(strGeneralInfo, m_mediainfo.album, "Album: ", ", ");
+  AppendInfoString(strGeneralInfo, m_mediainfo.description, "Desc: ", ", ");
+  AppendInfoString(strGeneralInfo, m_mediainfo.container_format, "Format: ", "");
 }
 
 bool CGstPlayer::CanRecord()
@@ -369,6 +394,25 @@ int64_t CGstPlayer::GetTotalTime()
   return totaltime;
 }
 
+bool CGstPlayer::IsCaching() const
+{
+  return m_buffering;
+}
+
+int CGstPlayer::GetCacheLevel() const
+{
+  return m_cache_level;
+}
+
+void CGstPlayer::GetVideoStreamInfo(SPlayerVideoStreamInfo &info)
+{
+  //ToDo
+  if (m_mediainfo.video_info){
+    MediaVideoInfo * vinfo = &m_mediainfo.video_info[m_video_current];
+    info.bitrate = vinfo->bitrate;
+  }
+}
+
 bool CGstPlayer::GetStreamDetails(CStreamDetails &details)
 {
   //TODO: need to implement
@@ -409,6 +453,14 @@ void CGstPlayer::Process()
       goto finish;
     }
 
+    if (m_starttime) {
+      GstEvent *seek_event;
+      seek_event = gst_event_new_seek(1.0, GST_FORMAT_TIME,
+          (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_KEY_UNIT),
+          GST_SEEK_TYPE_SET, m_starttime,
+          GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
+      gst_element_send_event(m_pPlayBin, seek_event);
+    }
     LoadMediaInfo();
 
     if (!SetAndWaitPlaybinState(GST_STATE_PLAYING, 10)){
@@ -452,34 +504,20 @@ void CGstPlayer::Process()
         }
       }
       else {
-        //TODO: Now we using direct play changes instead of msg, maybe need to check which approach is better
-        if( msg->type == GST_MESSAGE_APPLICATION && GST_MESSAGE_SRC(msg) == NULL) {
-          // const GstStructure *s = gst_message_get_structure(msg);
-          // const gchar *name = gst_structure_get_name(s);
-          // if(!g_strcmp0(name, "pause")) {
-          //   // if(/*!m_buffering &&*/ !m_paused)
-          //     gst_element_set_state(m_pPlayBin, GST_STATE_PLAYING);
-          //   // else
-          //   //   gst_element_set_state(m_pPlayBin, GST_STATE_PAUSED);
-          // }
-          // else if(!g_strcmp0(name, "quit")) {
-          //   //will quit by m_quit_msg
-          // }
-        }
-        else if(msg->type == GST_MESSAGE_BUFFERING)
+        if(msg->type == GST_MESSAGE_BUFFERING)
         {
           gst_message_parse_buffering(msg, &m_cache_level);
-          // printf("Buffering level =%d\n", m_cache_level);
-          // if(m_cache_level == 0) {
-          //   // m_buffering = true;
-          //   gst_element_set_state(m_pPlayBin, GST_STATE_PAUSED);
-          // }
-          // else if(m_cache_level >= 100) {
-          //   // m_buffering = false;
-          //   if(!m_paused) {
-          //     gst_element_set_state(m_pPlayBin, GST_STATE_PLAYING);
-          //   }
-          // }
+          printf("Buffering level = %d\n", m_cache_level);
+          if(m_cache_level == 0) {
+            m_buffering = true;
+            gst_element_set_state(m_pPlayBin, GST_STATE_PAUSED);
+          }
+          else if(m_cache_level >= 100) {
+            m_buffering = false;
+            if(!m_paused) {
+              gst_element_set_state(m_pPlayBin, GST_STATE_PLAYING);
+            }
+          }
         }
       }
       gst_message_unref(msg);
@@ -998,4 +1036,10 @@ void CGstPlayer::SetSinkRenderDelay(GstElement *ele, guint64 renderDelay)
   }else{
     g_object_set( G_OBJECT(ele), "render-delay", renderDelay, NULL);
   }
+}
+
+void CGstPlayer::AppendInfoString(std::string& infoStr, gchar* data, const std::string& prefix, const std::string& postfix)
+{
+  if (data != NULL)
+    infoStr = infoStr + prefix + data + postfix;
 }
