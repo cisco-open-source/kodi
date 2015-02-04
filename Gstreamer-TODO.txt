@@ -1,0 +1,36 @@
+Gstreamer backend in Kodi.
+
+Implemetation status:
+
+- Build system.
+DONE: Added support of gstreamer.
+To build kodi with gstreamer support, use configure option '--enable-gstreamer'. GstPlayer will become a
+default video player for kodi. Current implemetation is based on Linaro one https://github.com/robclark/xbmc/tree/linaro.
+
+- Video player.
+DONE: basic functionality (playback, seeking, fastforward etc.). Added ability to configure playbin 
+via xml file (./system/players/gstplayer/gstplayers.xml) wich allows to configure audio/video sink and flags for playbin.
+TODO: getting information from the audio/video streams, subtitles support.
+
+- Music player.
+Music player is the same player as video.
+
+- Integration with renderer.
+DONE: Simple integration is done only for testing purpose on desktop (see OutputPicture function in GstPlayer).
+TODO: Implement renderer for embedded system.
+There are two possibilities: video hole and EglImages.
+Video hole: Gstreamer draw video without kodi renderer under the Kodi GUI (e.g gstreamer decoder in secured mode),
+in kodi renderer we have transparent background. There could be issues with weston transparency and other launched application.
+EglImage: The idea is to create eglImage inside of some gstreamer plugin and pass it 
+(e.g via app sink) to Kodi. So there should be implemented gstreamer plugin that create eglImages, in Kodi renderer (LinuxRendererGLES)
+need to implement eglImage handling (or just adapte one that is made for libstagefright).
+All vendor specific logic should be encapsulated in specific gstreamer plugins.
+
+- AudioEngine
+At the moment implementation doesn't require AudioEngine for video and audio player.
+Sound output is handled by gstreamer.
+
+- Disable ffmpeg.
+TODO: Refactor Kodi code to avoid ffmpeg dependency (DVDPlayer, AudioEngine, etc.). Using ffmpeg could bring a licence issue.
+
+At current stage video and music player work on desktop (tested on Fedora 19).
