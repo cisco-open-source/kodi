@@ -42,19 +42,15 @@ CGstPlayer::CGstPlayer(IPlayerCallback& callback)
   m_speed(1),
   m_ready(true)
 {
-  printf("FUNCTION: %s\n", __FUNCTION__);
 }
 
 CGstPlayer::~CGstPlayer()
 {
-//TODO: need implement
-  printf("FUNCTION: %s\n", __FUNCTION__);
   CloseFile();
 }
 
 bool CGstPlayer::OpenFile(const CFileItem& file, const CPlayerOptions& options)
 {
-  printf("FUNCTION: %s\n", __FUNCTION__);
   m_item = file;
   m_cancelled = false;
   m_starttime = (gint64)(options.starttime*1000000000);
@@ -86,9 +82,7 @@ bool CGstPlayer::OpenFile(const CFileItem& file, const CPlayerOptions& options)
 
 bool CGstPlayer::CloseFile(bool)
 {
-  //TODO: need implement
-  printf("FUNCTION: %s\n", __FUNCTION__);
-  CLog::Log(LOGNOTICE, "CloseFile - Stopping Thread");
+  CLog::Log(LOGNOTICE, "%s: Stopping Thread", __FUNCTION__);
   //Stop thread playbin is destroyed playbin is created
   StopThread();
 
@@ -111,7 +105,7 @@ bool CGstPlayer::IsPlaying() const
 
 void CGstPlayer::Pause()
 {
-  CLog::Log(LOGNOTICE, "---[%s]---", __FUNCTION__);
+  CLog::Log(LOGNOTICE, "GstPlayer - %s", __FUNCTION__);
 
   m_paused = !m_paused;
 
@@ -184,16 +178,15 @@ void CGstPlayer::Seek(bool bPlus, bool bLargeStep, bool bChapterOverride)
     gst_element_send_event(m_pPlayBin, seek_event);
   }
 
-  CLog::Log(LOGNOTICE, "---[%s finish]---%lld", __FUNCTION__, seek);
+  CLog::Log(LOGNOTICE, "%s finish %lld", __FUNCTION__, seek);
   // g_infoManager.m_performingSeek = false;
   int seekOffset = (int)(seek - GetTime());
   m_callback.OnPlayBackSeek((int)seek, seekOffset);
-  CLog::Log(LOGNOTICE, "---[%s nretun]---%lld", __FUNCTION__, seek);
+  CLog::Log(LOGNOTICE, "%s retun %lld", __FUNCTION__, seek);
 }
 
 void CGstPlayer::SeekPercentage(float fPercent)
 {
-  printf("%s, fPercent = %4.2f\n", __FUNCTION__, fPercent);
   int64_t iTime = (int64_t)(GetTotalTime() * fPercent / 100);
   SeekTime(iTime);
 }
@@ -202,7 +195,7 @@ void CGstPlayer::SeekTime(int64_t iTime)
 {
   GstEvent *seek_event;
   int seekOffset = (int)(iTime - GetTime());
-  CLog::Log(LOGNOTICE, "---[%s]---%lld", __FUNCTION__, iTime);
+  CLog::Log(LOGNOTICE, "%s %lld", __FUNCTION__, iTime);
 
   // m_clock = iTime;
   if (m_pPlayBin){
@@ -214,7 +207,7 @@ void CGstPlayer::SeekTime(int64_t iTime)
   }
 
   m_callback.OnPlayBackSeek((int)iTime, seekOffset);
-  CLog::Log(LOGNOTICE, "---[%s finish]---%lld", __FUNCTION__, iTime);
+  CLog::Log(LOGNOTICE, "%s finish %lld", __FUNCTION__, iTime);
 }
 
 float CGstPlayer::GetPercentage()
@@ -328,7 +321,7 @@ bail:
 
 float CGstPlayer::GetAVDelay()
 {
-  printf("FUNCTION: %s\n", __FUNCTION__);
+  //TODO
   return 0.0f;
 }
 
@@ -358,9 +351,7 @@ void CGstPlayer::GetAudioStreamInfo(int index, SPlayerAudioStreamInfo &info)
   std::string temp;
   if (m_pPlayBin && m_mediainfo.audio_info && (index < m_mediainfo.audio_num)){
     if (m_mediainfo.audio_info[index].lang){
-      std::string code = m_mediainfo.audio_info[index].lang;
-      if (!g_LangCodeExpander.Lookup(temp, code))
-        info.language = m_mediainfo.audio_info[index].lang;
+      info.language = m_mediainfo.audio_info[index].lang;
     }
     if (m_mediainfo.audio_info[index].codec){
       info.audioCodecName = m_mediainfo.audio_info[index].codec;
@@ -423,7 +414,7 @@ void CGstPlayer::ToFFRW(int iSpeed)
 {
   gint64 elapsed = 0;
   GstFormat fmt = GST_FORMAT_TIME;
-  CLog::Log(LOGNOTICE, "---[%s]-%d--", __FUNCTION__, iSpeed);
+  CLog::Log(LOGNOTICE, "%s %d", __FUNCTION__, iSpeed);
   m_speed = iSpeed;
 
   if (m_pPlayBin){
@@ -507,7 +498,6 @@ void CGstPlayer::Process()
         if(msg->type == GST_MESSAGE_BUFFERING)
         {
           gst_message_parse_buffering(msg, &m_cache_level);
-          printf("Buffering level = %d\n", m_cache_level);
           if(m_cache_level == 0) {
             m_buffering = true;
             gst_element_set_state(m_pPlayBin, GST_STATE_PAUSED);
@@ -524,7 +514,6 @@ void CGstPlayer::Process()
     }
   }
 finish:  
-  printf("Player stop begin\n");
   CLog::Log(LOGNOTICE, "Player stop begin");
   gst_bus_set_flushing(m_pBus, TRUE);
 
@@ -557,7 +546,7 @@ bool CGstPlayer::CreatePlayBin()
   // if video-sink is appsink we set callback function
   // TODO: add the same for audio-sink
   g_object_get( G_OBJECT(m_pPlayBin), "video-sink", &videosink, NULL);
-  if (videosink && GST_APP_SINK(videosink))
+  if (videosink && GST_IS_APP_SINK(videosink))
   {
       g_object_set(G_OBJECT(videosink), "emit-signals", TRUE, "sync", TRUE, NULL);
       videosink_handler = g_signal_connect(videosink, "new-sample", G_CALLBACK(OnDecodedBuffer), this);
@@ -569,14 +558,11 @@ bool CGstPlayer::CreatePlayBin()
     CLog::Log(LOGERROR, "%s(): Failed in gst_pipeline_get_bus()!", __FUNCTION__);
     return false;
   }
-  printf("PlayBin created. FUNCTION: %s\n", __FUNCTION__);
   return true;
 }
 
 bool CGstPlayer::DestroyPlayBin()
 {
-  printf("FUNCTION: %s\n", __FUNCTION__);
-
   //remove signal from apssink
   if (videosink_handler) {
     GstElement *videosink = NULL;
@@ -596,9 +582,10 @@ GstFlowReturn CGstPlayer::OnDecodedBuffer(GstAppSink *appsink, void *data)
 
   GstSample *sample = gst_app_sink_pull_sample (appsink);
 
-  if (sample)
+  if (sample) {
     decoder->OutputPicture(sample);
-
+    gst_sample_unref(sample);
+  }
   return GST_FLOW_OK;
 }
 
@@ -629,47 +616,29 @@ int CGstPlayer::OutputPicture(GstSample *sample)
 
   if (caps) {
     gint width, height;
-    const gchar* format;
+    const gchar* format = NULL;
     GstStructure * structure = gst_caps_get_structure (caps, 0);
-    // GstVideoCrop * crop = gst_buffer_get_video_crop (gstbuffer);
 
-    format = gst_structure_get_string (structure, "format");
-    // printf("format: %s\n", format);
-
-    if (structure == NULL ||
-        !gst_structure_get_int (structure, "width", &width) ||
-        !gst_structure_get_int (structure, "height", &height)){
-      
-      CLog::Log(LOGERROR, "Unsupport output format");
+    if (structure == NULL) {
+      CLog::Log(LOGERROR, "%s: Unsupported buffer caps", __FUNCTION__);
       return -1;
     }
 
-    // printf("format: %s, width: %d, height: %d\n", format, width, height);
+    format = gst_structure_get_string (structure, "format");
+
+    if (format == NULL || !gst_structure_get_int (structure, "width", &width) ||
+        !gst_structure_get_int (structure, "height", &height)){
+      CLog::Log(LOGERROR, "%s: Unsupported output format or buffer caps", __FUNCTION__);
+      return -1;
+    }
 
     pPicture->iWidth = width;
     pPicture->iHeight = height;
 
-    // if (crop) {
-    //   pPicture->iDisplayWidth  = gst_video_crop_width (crop);
-    //   pPicture->iDisplayHeight = gst_video_crop_height (crop);
-    //   pPicture->iDisplayX = gst_video_crop_left (crop);
-    //   pPicture->iDisplayY = gst_video_crop_top (crop);
-    // } else {
-      pPicture->iDisplayWidth  = pPicture->iWidth;
-      pPicture->iDisplayHeight = pPicture->iHeight;
-    // }
+    pPicture->iDisplayWidth  = pPicture->iWidth;
+    pPicture->iDisplayHeight = pPicture->iHeight;
 
-    /* try various ways to create an eglImg from the decoded buffer: */
-    // if (has_ti_raw_video) {
-    //   pPicture->eglImageHandle =
-    //       new TIRawVideoEGLImageHandle(gstbuffer, width, height, format);
-    // }
-    // gst_buffer_map (buffer, &map, GST_MAP_READ);
-    // ptr = (uint32_t*)map.data;
-    /*if (pPicture->eglImageHandle) {
-      pPicture->format = DVDVideoPicture::FMT_EGLIMG;
-      flags = CONF_FLAGS_FORMAT_EGLIMG;
-    } else */ if (g_ascii_strcasecmp (format, "NV12") == 0) {
+    if (g_ascii_strcasecmp (format, "NV12") == 0) {
       gst_buffer_map (buffer, &map, GST_MAP_READ);
       pPicture->data[0] = map.data;
       pPicture->data[1] = map.data + m_output.width*m_output.height;
@@ -687,19 +656,17 @@ int CGstPlayer::OutputPicture(GstSample *sample)
       pPicture->iLineSize[1] = pPicture->iWidth/2;
       pPicture->iLineSize[2] = pPicture->iWidth/2;
       pPicture->format = RENDER_FMT_YUV420P;
-      // flags = CONF_FLAGS_FORMAT_YV12;
       // flags = 1938;
-      //TODO: optimazi buffer operation
       gst_buffer_unmap (buffer, &map);
     } else {
-      CLog::Log(LOGERROR, "Unsupport output format aaaa");
+      CLog::Log(LOGERROR, "%s: Unsupported output format - %s", __FUNCTION__, format);
       return -1;
     }
     
   }else{
+    CLog::Log(LOGERROR, "%s: No buffer caps", __FUNCTION__);
     return -1;
   }
-
 
   if ((m_output.width != pPicture->iWidth) || (m_output.height != pPicture->iHeight)){
     if(!g_renderManager.Configure(pPicture->iWidth,
@@ -713,11 +680,11 @@ int CGstPlayer::OutputPicture(GstSample *sample)
                                  0,
                                  0))
     {
-      CLog::Log(LOGNOTICE, "Failed to configure renderer");
+      CLog::Log(LOGNOTICE, "%s Failed to configure renderer", __FUNCTION__);
       return -1;
     }
 
-    printf("%s - change configuration.\n"
+    CLog::Log(LOGNOTICE, "%s: Change configuration.\n"
       "%dx%d. \n"
       "Display %dx%d. \n"
       " framerate: %4.2f\n."
@@ -733,11 +700,6 @@ int CGstPlayer::OutputPicture(GstSample *sample)
     m_output.width=pPicture->iWidth;
     m_output.height=pPicture->iHeight;
   }
-
-  // int buf = g_renderManager.WaitForBuffer(m_bStop);
-  // if (buf < 0)
-  //   printf("wow\n");
-  // printf("buffs = %d\n", buf);
   
   int index = g_renderManager.AddVideoPicture(*pPicture);
 #if 0
@@ -754,21 +716,18 @@ int CGstPlayer::OutputPicture(GstSample *sample)
 
   g_renderManager.FlipPage(CThread::m_bStop, 0LL, 0, -1, FS_NONE);
 
-  // if (pPicture->eglImageHandle)
-  //   pPicture->eglImageHandle->UnRef();
-
   return result;
 
 #endif
 }
 
+//TODO: there is simple implementation to test Youtube plugin
 std::string CGstPlayer::ParseAndCorrectUrl(CURL &url)
 {
   std::string strProtocol = url.GetTranslatedProtocol();
   std::string ret;
   url.SetProtocol(strProtocol);
 
-  // ResetUrlInfo();
   if(url.IsLocal()) { //local file
     std::string path = url.GetFileName();
     gchar *fname = NULL;
@@ -796,17 +755,10 @@ std::string CGstPlayer::ParseAndCorrectUrl(CURL &url)
     std::vector<std::string> list = StringUtils::Split(url.Get(), '|');
     url.Parse(list.front());
 
-    // // get username and password
-    // m_username = url.GetUserName();
-    // m_password = url.GetPassWord();
-
   }
 
-  // if (m_username.length() > 0 && m_password.length() > 0)
-  //   ret = url.GetWithoutUserDetails();
-  // else
-    ret = url.Get();
-  printf("++++++++++URL to play: %s\n", ret.c_str());
+  ret = url.Get();
+  CLog::Log(LOGNOTICE, "%s: URL to play: %s\n", __FUNCTION__, ret.c_str());
   return ret;
 }
 
@@ -816,11 +768,11 @@ bool CGstPlayer::SetAndWaitPlaybinState(GstState newstate, int timeout)
 
   if (m_pPlayBin){
     ret = gst_element_set_state(m_pPlayBin, newstate);
-    if (ret==GST_STATE_CHANGE_ASYNC){
+    if (ret == GST_STATE_CHANGE_ASYNC){
       GstState current, pending;
       do{
-      ret =  gst_element_get_state(m_pPlayBin, &current, &pending, GST_SECOND);
-        }while((m_cancelled==false)&&(ret==GST_STATE_CHANGE_ASYNC) && (timeout-->=0));
+        ret =  gst_element_get_state(m_pPlayBin, &current, &pending, GST_SECOND);
+      }while((m_cancelled == false) && (ret == GST_STATE_CHANGE_ASYNC) && (timeout-->=0));
     }
 
     if ((ret == GST_STATE_CHANGE_FAILURE) || (ret == GST_STATE_CHANGE_ASYNC)){
@@ -957,7 +909,7 @@ void CGstPlayer::CleanMediaInfo()
   }
 
   if (m_mediainfo.audio_info){
-    for (i=0;i<m_mediainfo.audio_num;i++){
+    for (i=0; i<m_mediainfo.audio_num; i++){
       MediaAudioInfo * ainfo = &m_mediainfo.audio_info[i];
 
       if (ainfo->lang){
@@ -975,7 +927,7 @@ void CGstPlayer::CleanMediaInfo()
   }
 
   if (m_mediainfo.video_info){
-    for (i=0;i<m_mediainfo.video_num;i++){
+    for (i=0; i<m_mediainfo.video_num; i++){
       MediaVideoInfo * vinfo = &m_mediainfo.video_info[i];
       if (vinfo->codec){
     g_free(vinfo->codec);

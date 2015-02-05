@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>   
+<players>    
+  <!-- <player type="" playbin="playbin" video_sink="appsink" audio_sink="" flags="" keep_pipeline="false" /> -->    
+  <player name="default">    
+   <type></type>   
+   <playbin>playbin</playbin>    
+   <video_sink>appsink</video_sink>    
+   <audio_sink></audio_sink>   
+   <flags>63</flags>   
+   <keep_playbin>true</keep_playbin>   
+ </player>   
+ <player name="default1"></player>   
+ <player name="default2"></player>   
+</players>

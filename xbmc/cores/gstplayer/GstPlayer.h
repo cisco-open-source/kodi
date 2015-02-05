@@ -39,10 +39,10 @@ class CGstPlayer : public IPlayer, public CThread
 public:
 	CGstPlayer(IPlayerCallback& callback);
   virtual ~CGstPlayer();
-  virtual bool Initialize(TiXmlElement* pConfig) {  printf("FUNCTION: %s\n", __FUNCTION__); return true; };
+  virtual bool Initialize(TiXmlElement* pConfig) { return true; };
   virtual bool OpenFile(const CFileItem& file, const CPlayerOptions& options);
-  virtual bool QueueNextFile(const CFileItem &file) { printf("FUNCTION: %s\n", __FUNCTION__); return false; }
-  virtual void OnNothingToQueueNotify() { printf("FUNCTION: %s\n", __FUNCTION__);}
+  virtual bool QueueNextFile(const CFileItem &file) { return false; }
+  virtual void OnNothingToQueueNotify() { }
   virtual bool CloseFile(bool reopen = false);
   virtual bool IsPlaying() const;
   virtual bool CanPause() { return true; };
@@ -50,17 +50,17 @@ public:
   virtual bool IsPaused() const;
   virtual bool HasVideo() const;
   virtual bool HasAudio() const;
-  virtual bool IsPassthrough() const { printf("FUNCTION: %s\n", __FUNCTION__); return false;}
+  virtual bool IsPassthrough() const { return false;}
   virtual bool CanSeek();
   virtual void Seek(bool bPlus = true, bool bLargeStep = false, bool bChapterOverride = false);
-  virtual bool SeekScene(bool bPlus = true) { printf("FUNCTION: %s\n", __FUNCTION__); return false;}
+  virtual bool SeekScene(bool bPlus = true) { return false;}
   virtual void SeekPercentage(float fPercent = 0);
   virtual float GetPercentage();
   virtual float GetCachePercentage(){ return 0;}
   virtual void SetMute(bool bOnOff);
   virtual void SetVolume(float volume);
   virtual bool ControlsVolume();
-  virtual void SetDynamicRangeCompression(long drc){ printf("FUNCTION: %s\n", __FUNCTION__);}
+  virtual void SetDynamicRangeCompression(long drc){ }
   virtual void GetAudioInfo( std::string& strAudioInfo);
   virtual void GetVideoInfo( std::string& strVideoInfo);
   virtual void GetGeneralInfo( std::string& strVideoInfo);
@@ -106,11 +106,11 @@ public:
    */
   virtual int64_t GetTotalTime();
   virtual void GetVideoStreamInfo(SPlayerVideoStreamInfo &info);
-  virtual int GetSourceBitrate(){ printf("FUNCTION: %s\n", __FUNCTION__); return 0;}
+  virtual int GetSourceBitrate(){ return 0;}
   virtual bool GetStreamDetails(CStreamDetails &details);
   virtual void ToFFRW(int iSpeed = 0);
   // Skip to next track/item inside the current media (if supported).
-  virtual bool SkipNext(){ printf("FUNCTION: %s\n", __FUNCTION__); return false;}
+  virtual bool SkipNext(){ return false;}
 
   //Returns true if not playback (paused or stopped beeing filled)
   virtual bool IsCaching() const;
@@ -125,11 +125,11 @@ public:
 
   //returns a state that is needed for resuming from a specific time
   virtual std::string GetPlayerState() { return ""; };
-  virtual bool SetPlayerState(const std::string& state) { printf("FUNCTION: %s\n", __FUNCTION__); return false;};
+  virtual bool SetPlayerState(const std::string& state) { return false;};
   
   virtual std::string GetPlayingTitle() {/*at the moment DVDPlayer supports only for Teletext*/ return ""; };
 
-  virtual bool SwitchChannel(PVR::CPVRChannel &channel) { printf("FUNCTION: %s\n", __FUNCTION__); return false; }
+  virtual bool SwitchChannel(PVR::CPVRChannel &channel) { return false; }
 
   // // Note: the following "OMX" methods are deprecated and will be removed in the future
   // // They should be handled by the video renderer, not the player

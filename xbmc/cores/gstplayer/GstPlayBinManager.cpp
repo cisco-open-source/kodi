@@ -27,7 +27,6 @@ CGstPlayBinManager::CGstPlayBinManager()
 
 CGstPlayBinManager::~CGstPlayBinManager()
 {
-  // printf("Singleton destructor. There is %d playbins!\n", m_playerList.size());
   while(!m_playerList.empty()) {
     gst_object_unref(m_playerList.front()->playBin);
     m_playerList.pop_front();
@@ -164,12 +163,12 @@ GstElement* CGstPlayBinManager::getAudioSink(const SPlayerDescription& playerDes
 void CGstPlayBinManager::InitPlayerDescriptions()
 {
   SPlayerDescription playerDescr = GetDefaultPlayerDescription();
-  std::string file = "special://xbmc/system/" + std::string(GST_PLAYERS_XML);
-  CLog::Log(LOGNOTICE, "Loading gst players settings from %s.", file.c_str());
+  std::string file = "special://xbmc/system/players/gstplayer/" + std::string(GST_PLAYERS_XML);
+  CLog::Log(LOGNOTICE, "%s: Loading gst players settings from %s.",  __FUNCTION__, file.c_str());
 
   if (!XFILE::CFile::Exists(file))
   { 
-    CLog::Log(LOGNOTICE, "%s does not exist. Skipping.", file.c_str());
+    CLog::Log(LOGNOTICE, "%s: %s does not exist. Skipping.", __FUNCTION__, file.c_str());
     m_playerDescriptions.push_back(playerDescr);
     return;
   }
@@ -177,7 +176,7 @@ void CGstPlayBinManager::InitPlayerDescriptions()
   CXBMCTinyXML playerCoreFactoryXML;
   if (!playerCoreFactoryXML.LoadFile(file))
   {
-    CLog::Log(LOGERROR, "Error loading %s, Line %d (%s)", file.c_str(), playerCoreFactoryXML.ErrorRow(), playerCoreFactoryXML.ErrorDesc());
+    CLog::Log(LOGERROR, "%s: Error loading %s, Line %d (%s)",  __FUNCTION__, file.c_str(), playerCoreFactoryXML.ErrorRow(), playerCoreFactoryXML.ErrorDesc());
     m_playerDescriptions.push_back(playerDescr);
     return;
   }
@@ -185,7 +184,7 @@ void CGstPlayBinManager::InitPlayerDescriptions()
   TiXmlElement *pConfig = playerCoreFactoryXML.RootElement();
   if (pConfig == NULL)
   {
-      CLog::Log(LOGERROR, "Error loading %s, Bad structure", file.c_str());
+      CLog::Log(LOGERROR, "%s: Error loading %s, Bad structure", __FUNCTION__, file.c_str());
       m_playerDescriptions.push_back(playerDescr);
       return;
   }
