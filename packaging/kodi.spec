@@ -97,6 +97,8 @@ BuildRequires: libnettle-devel
 BuildRequires: gmp-devel
 BuildRequires: libhogweed
 BuildRequires: libmicrohttpd-devel
+BuildRequires: pkgconfig(gstreamer-plugins-base-1.0)
+BuildRequires: pkgconfig(gstreamer-1.0)
 
 #BuildRequires: nfs-utils-devel
 
@@ -168,6 +170,7 @@ chmod +x bootstrap
 --disable-vdpau \
 --disable-vaapi \
 --disable-neon \
+--enable-gstreamer
 
 CFLAGS="$RPM_OPT_FLAGS -fPIC -I/usr/include/samba-4.0/ -D__STDC_CONSTANT_MACROS" \
 CXXFLAGS="$RPM_OPT_FLAGS -fPIC -I/usr/include/samba-4.0/ -D__STDC_CONSTANT_MACROS" \
