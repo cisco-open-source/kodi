@@ -3,9 +3,8 @@ Version=1.0
 Name=Kodi Media Center
 GenericName=Media Center
 Comment=Manage and view your media
-Exec=kodi
-Icon=kodi
-Terminal=false
+Exec=/usr/bin/kodi -fs
+Icon=/usr/share/icons/hicolor/32x32/apps/kodi.png
 Type=Application
 Categories=AudioVideo;Video;Player;TV;
 
@@ -13,7 +12,7 @@ Actions=Fullscreen;Standalone;
 
 [Desktop Action Fullscreen]
 Name=Open in fullscreen
-Exec=kodi -fs
+Exec=/usr/bin/kodi -fs
 OnlyShowIn=Unity;
 
 [Desktop Action Standalone]

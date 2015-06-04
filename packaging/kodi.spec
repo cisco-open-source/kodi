@@ -187,6 +187,8 @@ rm -r $RPM_BUILD_ROOT/%{_datadir}/doc/
 desktop-file-install \
  --dir=${RPM_BUILD_ROOT}%{_datadir}/applications \
  $RPM_BUILD_ROOT%{_datadir}/applications/kodi.desktop
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications/tizen
+mv $RPM_BUILD_ROOT%{_datadir}/applications/kodi.desktop $RPM_BUILD_ROOT%{_datadir}/applications/tizen/kodi.desktop
 
 # Normally we are expected to build these manually. But since we are using
 # the system Python interpreter, we also want to use the system libraries
@@ -225,7 +227,7 @@ fi
 %{_datadir}/kodi
 %{_datadir}/xsessions/xbmc.desktop
 %{_datadir}/xsessions/kodi.desktop
-%{_datadir}/applications/kodi.desktop
+%{_datadir}/applications/tizen/kodi.desktop
 %{_datadir}/icons/hicolor/*/*/*.png
 
 
